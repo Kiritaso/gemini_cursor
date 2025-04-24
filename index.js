@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenAI, Modality } = require("@google/genai");
 
 const app = express();
 app.use(cors());
@@ -12,13 +12,17 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 app.post("/api/gen-image", async (req, res) => {
   const { prompt } = req.body;
   try {
-    const result = await ai.models.generateImages({
+    const result = await ai.models.generateContent({
       model: "gemini-2.0-flash-exp-image-generation",
-      prompt,
-      config: { numberOfImages: 1 },
+      contents: [{ text: prompt }],
+      config: { responseModalities: [Modality.TEXT, Modality.IMAGE] },
     });
-    const uri = result.images[0].uri;
-    return res.json({ uri });
+    const parts = result.candidates[0].content.parts;
+    // テキスト部分と Base64 画像データを抜き出し
+    const text = parts.find(p => p.text)?.text;
+    const imageBase64 = parts.find(p => p.inlineData)?.inlineData.data;
+    return res.json({ text, imageBase64 });
+
   } catch (err) {
     console.error("Image API error:", err);
     return res.status(500).json({ error: err.message });
