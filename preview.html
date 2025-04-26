@@ -13,11 +13,14 @@
     <script>
       // ページ読み込み時に自動でサーバーへ問い合わせ
       window.addEventListener("load", async () => {
+        // URL の ?prompt=... を取得。なければデフォルト
+        const params = new URLSearchParams(window.location.search);
+        const prompt = params.get("prompt") || "make me a picture of batman";
         try {
           const res = await fetch("http://localhost:3000/api/gen-image", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: "make me a picture of batman" }),
+            body: JSON.stringify({ prompt }),  // 動的に渡す
           });
           const { text, imageBase64 } = await res.json();
           document.getElementById("text").innerText = text || "";

@@ -4,6 +4,7 @@ const cors = require("cors");
 const { GoogleGenAI, Modality } = require("@google/genai");
 
 const app = express();
+app.use(express.static(__dirname));
 app.use(cors());
 app.use(express.json());
 
